@@ -8,9 +8,14 @@ packer {
   }
 }
 
+variable "username" {
+  type    = string
+  default = "labadmin"
+}
+
 variable "domain" {
   type    = string
-  default = "template.local"
+  default = "corp.contoso.com"
 }
 
 variable "ssh_key" {
@@ -55,7 +60,7 @@ variable "switch_name" {
 
 
 source "hyperv-iso" "deb-bullseye" {
-  boot_command      = ["<wait>c<wait>", "linux /install.amd/vmlinuz ", "auto=true ", "url=http://{{ .HTTPIP }}:{{ .HTTPPort }}//debian-11-preseed.cfg ", "hostname=${var.vm_name} ", "domain=${var.domain} ", "interface=auto ", "vga=788 noprompt quiet --<enter>", "initrd /install.amd/initrd.gz<enter>", "boot<enter>"]
+  boot_command      = ["<wait>c<wait>", "linux /install.amd/vmlinuz ", "auto=true ", "url=http://{{ .HTTPIP }}:{{ .HTTPPort }}//debian-11-preseed.cfg ", "passwd/username=packer", "hostname=${var.vm_name} ", "domain=${var.domain} ", "interface=auto ", "vga=788 noprompt quiet --<enter>", "initrd /install.amd/initrd.gz<enter>", "boot<enter>"]
   boot_wait         = "3s"
   generation        = 2
   headless          = true
