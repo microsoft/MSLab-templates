@@ -1,9 +1,0 @@
-[
-    {
-        "name": "Debian Bullseye",
-        "templateFile": "debian-11.pkr.hcl",
-        "templateDir": "debian-11",
-        "templatePackage": "debian-11.zip",
-        "isoPattern": "debian-11.[0-9.]+-amd64-netinst.iso"
-    }
-]

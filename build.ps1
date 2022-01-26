@@ -34,7 +34,6 @@ foreach($template in $templates) {
     #Remove-Item -Path $templateDirectory -Recurse
 
     $metadataInfo += $metadataTable
-    $metadataInfo += $metadataTable
 }
 
 ConvertTo-Json $metadataInfo | Out-File -FilePath (Join-Path $releaseDirectory.FullName "templates.json")

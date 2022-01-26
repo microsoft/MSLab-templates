@@ -10,7 +10,12 @@ packer {
 
 variable "username" {
   type    = string
-  default = "labadmin"
+  default = "packer"
+}
+
+variable "password" {
+  type    = string
+  default = "LS1setup!"
 }
 
 variable "domain" {
@@ -25,7 +30,7 @@ variable "ssh_key" {
 
 variable "vm_name" {
   type    = string
-  default = "deb-bullseye-tpl"
+  default = "debian11-tpl"
 }
 
 variable "vm_dir" {
@@ -50,7 +55,7 @@ variable "iso_checksum" {
 }
 
 locals {
-  vm_dir = "${var.vm_dir}/debian"
+  vm_dir = "${var.vm_dir}/debian-11"
 }
 
 variable "switch_name" {
@@ -59,8 +64,8 @@ variable "switch_name" {
 }
 
 
-source "hyperv-iso" "deb-bullseye" {
-  boot_command      = ["<wait>c<wait>", "linux /install.amd/vmlinuz ", "auto=true ", "url=http://{{ .HTTPIP }}:{{ .HTTPPort }}//debian-11-preseed.cfg ", "passwd/username=packer", "hostname=${var.vm_name} ", "domain=${var.domain} ", "interface=auto ", "vga=788 noprompt quiet --<enter>", "initrd /install.amd/initrd.gz<enter>", "boot<enter>"]
+source "hyperv-iso" "debian-11" {
+  boot_command      = ["<wait>c<wait>", "linux /install.amd/vmlinuz ", "auto=true ", "url=http://{{ .HTTPIP }}:{{ .HTTPPort }}//debian-11-preseed.cfg ", "passwd/user-password=${var.password} ", "passwd/user-password-again=${var.password} ", "passwd/username=${var.username} ", "hostname=${var.vm_name} ", "domain=${var.domain} ", "interface=auto ", "vga=788 noprompt quiet --<enter>", "initrd /install.amd/initrd.gz<enter>", "boot<enter>"]
   boot_wait         = "3s"
   generation        = 2
   headless          = true
@@ -68,10 +73,10 @@ source "hyperv-iso" "deb-bullseye" {
   iso_checksum      = "sha256:${var.iso_checksum}"
   iso_url           = "${var.iso_path}"
   output_directory  = "${var.vm_dir}"
-  shutdown_command  = "echo 'packer' | sudo -S shutdown -P now"
-  ssh_password      = "packer"
+  shutdown_command  = "echo '${var.password}' | sudo -S shutdown -P now"
+  ssh_password      = "${var.password}"
   ssh_timeout       = "30m"
-  ssh_username      = "packer"
+  ssh_username      = "${var.username}"
   switch_name       = "${var.switch_name}"
   vm_name           = "packer-${var.vm_name}"
   differencing_disk = true
@@ -80,12 +85,13 @@ source "hyperv-iso" "deb-bullseye" {
 }
 
 build {
-  sources = ["source.hyperv-iso.deb-bullseye"]
+  sources = ["source.hyperv-iso.debian-11"]
 
   provisioner "shell" {
-    inline = ["mkdir -p /home/packer/.ssh/", "echo '${var.ssh_key}' | tee /home/packer/.ssh/authorized_keys"]
+    inline = ["mkdir -p /home/${var.username}/.ssh/", "echo '${var.ssh_key}' | tee /home/${var.username}/.ssh/authorized_keys"]
   }
 
+# include latest kernel for the latest Hyper-V integration components
   provisioner "shell" {
     inline = [
         "echo 'Package: linux-* initramfs-tools  hyperv-daemons' | sudo tee /etc/apt/preferences.d/hyperv.pref",
@@ -93,14 +99,15 @@ build {
         "echo 'Pin-Priority: 500' | sudo tee -a /etc/apt/preferences.d/hyperv.pref"
     ]
   }
-
   provisioner "shell" {
     inline = [
         "echo 'deb http://deb.debian.org/debian bullseye-backports main' | sudo tee /etc/apt/sources.list.d/backports.list",
-	"sudo apt-get update",
-	"sudo apt-get upgrade -y"
+        "sudo apt-get update",
+        "sudo apt-get upgrade -y"
     ]
   }
+
+# Do not store EFI boot loader in EFI itself (so we can use only a VHDX to create new VMs)
   provisioner "shell" {
     inline = [
       "sudo grub-install --target=x86_64-efi --efi-directory=/boot/efi --no-nvram --removable",
@@ -108,10 +115,12 @@ build {
     ]
   }
 
+# Enable vsock for SSH to enable SSH Direct connection via hvc ssh command.
   provisioner "shell" {
     inline = ["sudo cp /usr/lib/systemd/system/ssh.socket /usr/lib/systemd/system/ssh_vsock.socket", "sudo cp /usr/lib/systemd/system/ssh@.service /usr/lib/systemd/system/ssh_vsock@.service", "sudo sed -i 's/ListenStream=22/ListenStream=vsock::22/' /usr/lib/systemd/system/ssh_vsock.socket", "sudo systemctl disable ssh.service", "sudo systemctl enable ssh.socket", "sudo systemctl enable ssh_vsock.socket"]
   }
 
+# When using SSH Direct all connections would come from UNKNOWN hostname, add it to localhost to avoid resolution timeouts when connecting
   provisioner "shell" {
     inline = ["sudo sed -i -E 's/^#UseDNS.*$/UseDNS no/' /etc/ssh/sshd_config", "sudo sed -i -E 's/^(127\\.0\\.0\\.1[[:blank:]].*)$/\\1\\tUNKNOWN/' /etc/hosts", "echo 'hv_sock' | sudo tee /etc/modules-load.d/hv_sock.conf"]
   }
