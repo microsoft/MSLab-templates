@@ -16,6 +16,7 @@ variable "username" {
 variable "password" {
   type    = string
   default = "LS1setup!"
+  sensitive = true
 }
 
 variable "domain" {
@@ -87,6 +88,16 @@ source "hyperv-iso" "debian-11" {
 build {
   sources = ["source.hyperv-iso.debian-11"]
 
+# temporarily make sudo passwordless
+  provisioner "shell" {
+    execute_command  = "echo ${var.password} | {{.Vars}} sudo -S bash -c {{.Path}}"
+    inline = [
+      "echo '${var.username} ALL=(ALL) NOPASSWD: ALL' | tee /etc/sudoers.d/${var.username}",
+      "chmod 440 /etc/sudoers.d/${var.username}",
+      "ls -l /etc/sudoers.d"
+    ]
+  }
+
   provisioner "shell" {
     inline = ["mkdir -p /home/${var.username}/.ssh/", "echo '${var.ssh_key}' | tee /home/${var.username}/.ssh/authorized_keys"]
   }
@@ -123,5 +134,10 @@ build {
 # When using SSH Direct all connections would come from UNKNOWN hostname, add it to localhost to avoid resolution timeouts when connecting
   provisioner "shell" {
     inline = ["sudo sed -i -E 's/^#UseDNS.*$/UseDNS no/' /etc/ssh/sshd_config", "sudo sed -i -E 's/^(127\\.0\\.0\\.1[[:blank:]].*)$/\\1\\tUNKNOWN/' /etc/hosts", "echo 'hv_sock' | sudo tee /etc/modules-load.d/hv_sock.conf"]
+  }
+
+# and cleanup sudoers NOPASSWD
+  provisioner "shell" {
+    inline = ["sudo rm /etc/sudoers.d/${var.username}"]
   }
 }

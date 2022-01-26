@@ -63,7 +63,7 @@ jobs:
         shell: powershell
         run: |
           if("${{ needs.new-version.outputs.previous_tag }}" -ne "") {
-            $changelog = (& { git log ${{ needs.new-version.outputs.previous_tag }}..HEAD --pretty=format:'- %s (%h)' --abbrev-commit -- Scripts }) -join '%0D%0A'
+            $changelog = (& { git log ${{ needs.new-version.outputs.previous_tag }}..HEAD --pretty=format:'- %s (%h)' --abbrev-commit -- templates }) -join '%0D%0A'
             "Changes for ${{ needs.new-version.outputs.previous_tag }} are:"
             $changelog
           } else {
