@@ -136,6 +136,17 @@ build {
     inline = ["sudo sed -i -E 's/^#UseDNS.*$/UseDNS no/' /etc/ssh/sshd_config", "sudo sed -i -E 's/^(127\\.0\\.0\\.1[[:blank:]].*)$/\\1\\tUNKNOWN/' /etc/hosts", "echo 'hv_sock' | sudo tee /etc/modules-load.d/hv_sock.conf"]
   }
 
+# Add needed packages for AD join
+  provisioner "shell" {
+    execute_command  = "{{.Vars}} sudo -S bash -c {{.Path}}"
+    inline = [
+      "apt install -y realmd sssd sssd-tools libnss-sss libpam-sss adcli samba-common-bin oddjob oddjob-mkhomedir packagekit",
+      "echo 'session optional        pam_mkhomedir.so skel=/etc/skel umask=077' >> /etc/pam.d/common-session", # create homedirs
+      "sed -i -E 's/^use_fully_qualified_names = .+$/use_fully_qualified_names = False/g' /etc/sssd/sssd.conf", # enable login without need for full upn
+      "systemctl restart sssd"
+    ]
+  }
+
 # and cleanup sudoers NOPASSWD
   provisioner "shell" {
     inline = ["sudo rm /etc/sudoers.d/${var.username}"]
