@@ -64,7 +64,6 @@ variable "switch_name" {
   default = "Default Switch"
 }
 
-
 source "hyperv-iso" "debian-11" {
   boot_command      = ["<wait>c<wait>", "linux /install.amd/vmlinuz ", "auto=true ", "url=http://{{ .HTTPIP }}:{{ .HTTPPort }}//debian-11-preseed.cfg ", "passwd/user-password=${var.password} ", "passwd/user-password-again=${var.password} ", "passwd/username=${var.username} ", "hostname=${var.vm_name} ", "domain=${var.domain} ", "interface=auto ", "vga=788 noprompt quiet --<enter>", "initrd /install.amd/initrd.gz<enter>", "boot<enter>"]
   boot_wait         = "3s"

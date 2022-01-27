@@ -57,7 +57,7 @@ jobs:
       - name: Build scripts 
         shell: powershell
         run: |
-          ./build.ps1
+          ./build.ps1 -Version ${{ needs.new-version.outputs.new_tag }}
       - name: Create changelog
         id: changelog
         shell: powershell

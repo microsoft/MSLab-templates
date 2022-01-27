@@ -1,3 +1,8 @@
+param(
+    [Parameter(Mandatory = $true)]
+    [string]$Version
+)
+
 $baseDir = ".\templates\"
 $outputDir = ".\output"
 
@@ -17,9 +22,9 @@ foreach($template in $templates) {
         continue
     }
 
-    $metadata = Get-Content -Path $templateMetadataFile | ConvertFrom-Json
+    $templateMetadata = Get-Content -Path $templateMetadataFile | ConvertFrom-Json
     $metadataTable = @{}
-    $metadata.psobject.Properties | ForEach-Object { $metadataTable[$_.Name] = $_.Value }
+    $templateMetadata.psobject.Properties | ForEach-Object { $metadataTable[$_.Name] = $_.Value }
 
     $metadataTable["directory"] = $template.Name
     $metadataTable["package"] = "$($template.Name).zip"
@@ -36,4 +41,9 @@ foreach($template in $templates) {
     $metadataInfo += $metadataTable
 }
 
-ConvertTo-Json $metadataInfo | Out-File -FilePath (Join-Path $releaseDirectory.FullName "templates.json")
+$metadata = @{
+    "version" = $Version
+    "templates" = $metadataInfo
+}
+
+ConvertTo-Json $metadata | Out-File -FilePath (Join-Path $releaseDirectory.FullName "templates.json")
