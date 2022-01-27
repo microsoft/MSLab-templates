@@ -141,7 +141,7 @@ build {
     inline = [
       "apt install -y realmd sssd sssd-tools libnss-sss libpam-sss adcli samba-common-bin oddjob oddjob-mkhomedir packagekit",
       "echo 'session optional        pam_mkhomedir.so skel=/etc/skel umask=077' >> /etc/pam.d/common-session", # create homedirs
-      "sed -i -E 's/^use_fully_qualified_names = .+$/use_fully_qualified_names = False/g' /etc/sssd/sssd.conf", # enable login without need for full upn
+      #"sed -i -E 's/^use_fully_qualified_names = .+$/use_fully_qualified_names = False/g' /etc/sssd/sssd.conf", # enable login without need for full upn
       "systemctl restart sssd"
     ]
   }
