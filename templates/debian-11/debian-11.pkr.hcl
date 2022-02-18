@@ -2,8 +2,8 @@ packer {
   required_plugins {
     # Fixed version for Windows 11 (to be able to use Default Switch)
     hyperv = {
-      version = ">= 1.0.0"
-      source  = "github.com/machv/hyperv"
+      version = ">= 1.0.2"
+      source  = "github.com/hashicorp/hyperv"
     }
   }
 }
@@ -70,7 +70,7 @@ source "hyperv-iso" "debian-11" {
   generation        = 2
   headless          = true
   http_directory    = "${path.root}/http"
-  iso_checksum      = "sha256:${var.iso_checksum}"
+  iso_checksum      = "none"
   iso_url           = "${var.iso_path}"
   output_directory  = "${var.vm_dir}"
   shutdown_command  = "echo '${var.password}' | sudo -S shutdown -P now"
@@ -141,7 +141,6 @@ build {
     inline = [
       "apt install -y realmd sssd sssd-tools libnss-sss libpam-sss adcli samba-common-bin oddjob oddjob-mkhomedir packagekit",
       "echo 'session optional        pam_mkhomedir.so skel=/etc/skel umask=077' >> /etc/pam.d/common-session", # create homedirs
-      #"sed -i -E 's/^use_fully_qualified_names = .+$/use_fully_qualified_names = False/g' /etc/sssd/sssd.conf", # enable login without need for full upn
       "systemctl restart sssd"
     ]
   }
