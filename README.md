@@ -1,6 +1,14 @@
-# Templates to build VHDX images for MSLab
+# Parent disk templates for MSLab
 
-This repository contains alternative templates that can be used to create Parent disks for [MSLab](https://aka.ms/mslab).
+This repository contains alternative templates that can be used to create additional parent disks for [MSLab](https://aka.ms/mslab) tool. 
+
+
+## Supported distos
+
+| Distribution  | template folder | Tested ISO |
+| ------------- | ------------- | ----- |  
+| Debian 11  | `debian-11`  | netinst ISO | 
+| Red Hat Enterprise Linux 8 | `rhel-8` | full installation ISO is needed | 
 
 ## Contributing
 
