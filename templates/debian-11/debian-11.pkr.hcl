@@ -49,10 +49,9 @@ variable "iso_path" {
   default = ""
 }
 
-
-variable "iso_checksum" {
-  type    = string
-  default = ""
+variable "osdisk_size" { 
+  type    = number
+  default = 20480 
 }
 
 locals {
@@ -80,7 +79,7 @@ source "hyperv-iso" "debian-11" {
   switch_name       = "${var.switch_name}"
   vm_name           = "packer-${var.vm_name}"
   differencing_disk = true
-  disk_size         = 20480 #20GB
+  disk_size         = "${var.osdisk_size}"
   disk_block_size   = 1 # 1MB as per https://docs.microsoft.com/en-us/windows-server/virtualization/hyper-v/best-practices-for-running-linux-on-hyper-v#tuning-linux-file-systems-on-dynamic-vhdx-files
 }
 
