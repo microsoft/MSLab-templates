@@ -36,8 +36,8 @@ jobs:
           $newTag = "v" + ($newVersion -join ".")
           git tag $newTag
           "New version: $newTag"
-          echo "::set-output name=previous_tag::$currentTag"
-          echo "::set-output name=new_tag::$newTag"
+          echo "previous_tag=$currentTag" >> $GITHUB_OUTPUT
+          echo "new_tag=$newTag" >> $GITHUB_OUTPUT
       
       - name: Push version tag
         uses: ad-m/github-push-action@master
@@ -69,7 +69,7 @@ jobs:
           } else {
             $changelog = ""
           }
-          echo "::set-output name=changelog::$changelog"
+          echo "changelog=$changelog" >> $GITHUB_OUTPUT
         
       - name: Create Github Release
         id: create_release
