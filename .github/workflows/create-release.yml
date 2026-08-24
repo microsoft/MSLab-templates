@@ -19,7 +19,7 @@ jobs:
       previous_tag: ${{ steps.bump.outputs.previous_tag }}
       new_tag: ${{ steps.bump.outputs.new_tag }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@0717577d45739eb3c851188b29f50ed6c0b2194e # v2.8.0
       - id: bump
         name: Bump version
         run: |
@@ -51,7 +51,7 @@ jobs:
     runs-on: windows-2019
     needs: new-version
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@0717577d45739eb3c851188b29f50ed6c0b2194e # v2.8.0
         with:
           fetch-depth: 0
       - name: Build scripts 
@@ -73,7 +73,7 @@ jobs:
         
       - name: Create Github Release
         id: create_release
-        uses: actions/create-release@v1
+        uses: actions/create-release@0cb9c9b65d5d1901c1f53e5e66eaf4afd303e70e # v1.1.4
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -86,7 +86,7 @@ jobs:
           prerelease: false
 
       - name: Upload binaries to release
-        uses: svenstaro/upload-release-action@v2
+        uses: svenstaro/upload-release-action@29e53e917877a24fad85510ded594ab3c9ca12de # 2.11.5
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: output/*
